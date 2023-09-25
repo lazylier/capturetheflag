@@ -304,7 +304,7 @@ return {
 		local worst_players = nil
 
 		local rankings = ctf_modebase:get_current_mode().rankings
-		local team_sd_sums = {}
+		local team_kd_sums = {}
 
 		for _, team in ipairs(team_list) do
 			local players_count = ctf_teams.online_players[team].count
@@ -330,22 +330,22 @@ return {
 				worst_players = {s = players_count, t = team}
 			end
 
-			local sd_sum = 0
+			local kd_sum = 0
 			for _, p in ipairs(ctf_teams.online_players[team].players) do
-				sd_sum = sd_sum + ((rankings:get(p).score or 10) / (rankings:get(p).deaths or 1))
+				kd_sum = kd_sum + ((rankings:get(p).kills or 1) / (rankings:get(p).deaths or 1))
 			end
-			table.insert(team_sd_sums, {t = team, s = sd_sum})
+			table.insert(team_kd_sums, {t = team, s = kd_sum})
 		end
 
 		local kd_diff = best_kd.s - worst_kd.s
 		local players_diff = best_players.s - worst_players.s
 
-		local lowest = {team_sd_sums[1]}
-		for i = 2, #team_sd_sums do
-			if team_sd_sums[i].s < lowest[1].s then
-				lowest = {team_sd_sums[i]}
-			elseif team_sd_sums[i] == lowest[1].s then
-				table.insert(lowest, team_sd_sums[i])
+		local lowest = {team_kd_sums[1]}
+		for i = 2, #team_kd_sums do
+			if team_kd_sums[i].s < lowest[1].s then
+				lowest = {team_kd_sums[i]}
+			elseif team_kd_sums[i] == lowest[1].s then
+				table.insert(lowest, team_kd_sums[i])
 			end
 		end
 
