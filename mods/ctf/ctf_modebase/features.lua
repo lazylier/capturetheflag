@@ -303,6 +303,9 @@ return {
 		local best_players = nil
 		local worst_players = nil
 
+		local rankings = ctf_modebase:get_current_mode().rankings
+		local team_sd_sums = {}
+
 		for _, team in ipairs(team_list) do
 			local players_count = ctf_teams.online_players[team].count
 
@@ -326,27 +329,35 @@ return {
 			if not worst_players or players_count < worst_players.s then
 				worst_players = {s = players_count, t = team}
 			end
+
+			local sd_sum = 0
+			for _, p in ipairs(ctf_teams.online_players[team].players) do
+				sd_sum = sd_sum + ((rankings:get(p).score or 10) / (rankings:get(p).deaths or 1))
+			end
+			table.insert(team_sd_sums, {t = team, s = sd_sum})
 		end
 
 		local kd_diff = best_kd.s - worst_kd.s
 		local players_diff = best_players.s - worst_players.s
 
-		local remembered_team = ctf_teams.get(player)
-
-		if worst_players.s == 0 then
-			return worst_players.t
+		local lowest = {team_sd_sums[1]}
+		for i = 2, #team_sd_sums do
+			if team_sd_sums[i].s < lowest[1].s then
+				lowest = {team_sd_sums[i]}
+			elseif team_sd_sums[i] == lowest[1].s then
+				table.insert(lowest, team_sd_sums[i])
+			end
 		end
+
+		local remembered_team = ctf_teams.get(player)
 
 		-- Allocate player to remembered team unless they're desperately needed in the other
 		if remembered_team and not ctf_modebase.flag_captured[remembered_team] and kd_diff <= 0.6 and players_diff < 5 then
 			return remembered_team
+		else
+			return lowest[math.random(#lowest)].t
 		end
 
-		if players_diff == 0 or (kd_diff > 0.4 and players_diff < 2) then
-			return worst_kd.t
-		else
-			return worst_players.t
-		end
 	end,
 	can_take_flag = function(player, teamname)
 		if not ctf_modebase.match_started then
