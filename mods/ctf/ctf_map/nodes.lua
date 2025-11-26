@@ -158,7 +158,6 @@ minetest.register_node("ctf_map:firefly", {
 	buildable_to = false,
 	walkable = false,
 	pointable = pointable_compat,
-	groups = {catchable = 1},
 	selection_box = {
 		type = "fixed",
 		fixed = {-0.1, -0.1, -0.1, 0.1, 0.1, 0.1},
